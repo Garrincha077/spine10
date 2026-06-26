@@ -3,7 +3,8 @@
 .env.local
 secrets/
 *.local.json
-claude_desktop_config.json          # real desktop config with live keys (use the .example in git)
+# real desktop config holds live keys (PAT etc.) — keep only the .example in git
+claude_desktop_config.json
 
 # supabase cli local state
 supabase/.branches/

@@ -28,29 +28,29 @@ Konveksni planer sportskih akumulatora (barbell staze A–D, slagač parova, Mon
 
 ---
 
-## 1) Supabase (jednom, na tvom računalu)
+## 1) Sve odjednom — jedna naredba (na tvom računalu)
 
-> Claude Code web-sandbox ne smije do `api.supabase.com` (mrežna politika), pa ovo pokreni
-> lokalno — skripta odradi sve: kreira projekt, primijeni shemu, napiše `config.js`.
+> Claude Code web-sandbox ne smije do `api.supabase.com` (mrežna politika org-a), pa ovo
+> pokreni lokalno. Skripta odradi **sve**: projekt + shema + login-user + `config.js` +
+> gotov `claude_desktop_config.json` (s tvojim ključevima).
 
 ```bash
 git clone https://github.com/Garrincha077/spine10
 cd spine10
 
-export SUPABASE_ACCESS_TOKEN=sbp_xxx          # Supabase → Account → Access Tokens
+export SUPABASE_ACCESS_TOKEN=sbp_xxx     # Supabase → Account → Access Tokens
+export ODDS_API_KEY=xxxx                 # the-odds-api.com
+export API_FOOTBALL_KEY=xxxx             # dashboard.api-football.com
+# opcionalno: export LOGIN_EMAIL=you@example.com LOGIN_PASSWORD=tajna
 node scripts/setup-supabase.mjs
 ```
 
-Skripta: kreira projekt `asimetrija` → pričeka da bude zdrav → primijeni
-`supabase/migrations/0001_init.sql` (tablice + RLS + realtime) → upiše `config.js`
-(Project URL + anon key). Ispisat će i `project ref`.
+Na kraju ispiše **login (email / lozinka)** i točan put do Claude config-a. Time je Supabase
+gotov — bez diranja dashboarda i SQL-a.
 
-Zatim napravi svoj jedini login-račun:
-**Dashboard → Authentication → Users → Add user** (postavi lozinku, uključi *Auto Confirm User*).
-
-> Alternativa bez skripte: napravi projekt u dashboardu, otvori **SQL Editor**, zalijepi
-> sadržaj `supabase/migrations/0001_init.sql`, Run. Pa u `config.js` upiši Project URL + anon key
-> (Project Settings → API).
+> Bez skripte (ručno): projekt u dashboardu → **SQL Editor** → zalijepi
+> `supabase/migrations/0001_init.sql` → Run; u `config.js` upiši URL + anon key
+> (Project Settings → API); user u Authentication → Users (Auto Confirm).
 
 ## 2) Pokreni app
 
@@ -60,26 +60,25 @@ Indikator u vrhu: `sinkronizirano` = sve OK.
 
 ## 3) Žive kvote — MCP serveri (Claude Desktop)
 
-Kopiraj `mcpServers` blok iz `claude_desktop_config.json.example` u svoj
-`claude_desktop_config.json` i zamijeni placeholdere:
-
-| server | čemu služi | ključ |
-|---|---|---|
-| `supabase` | Claude čita/piše Dnevnik + bazu | Supabase PAT + `project-ref` |
-| `api-football` | forme, ozljede, rasporedi (npm `api-football-mcp`) | API-Football key |
-| `asimetrija-odds` | žive kvote s **the-odds-api.com** (lokalni server iz `mcp/`) | The Odds API key |
-
-Za `asimetrija-odds` (jedini lokalni server) instaliraj ovisnosti jednom:
+Skripta iz koraka 1 je već napisala `claude_desktop_config.json` s tvojim ključevima i
+ispravnim putanjama (3 servera: `supabase`, `api-football`, `asimetrija-odds`). Preostaje:
 
 ```bash
-cd mcp/odds-the-odds-api && npm install
+cd mcp/odds-the-odds-api && npm install      # jednom — lokalni odds server
 ```
 
-…pa u configu stavi punu putanju do `server.mjs` (vidi primjer). Lokacija config-a:
-macOS `~/Library/Application Support/Claude/claude_desktop_config.json`,
-Windows `%APPDATA%\Claude\claude_desktop_config.json`,
-Linux `~/.config/Claude/claude_desktop_config.json`.
-**Potpuno ugasi i otvori Claude Desktop** → ikona čekića pokazuje alate.
+…pa kopiraj config na lokaciju koju je skripta ispisala
+(macOS `~/Library/Application Support/Claude/`, Windows `%APPDATA%\Claude\`,
+Linux `~/.config/Claude/`) i **potpuno ugasi pa otvori Claude Desktop** → čekić pokaže alate.
+
+| server | čemu služi | izvor |
+|---|---|---|
+| `supabase` | Claude čita/piše Dnevnik + bazu | `@supabase/mcp-server-supabase` |
+| `api-football` | forme, ozljede, rasporedi | npm `api-football-mcp` |
+| `asimetrija-odds` | žive kvote s **the-odds-api.com** | lokalni `mcp/odds-the-odds-api/` |
+
+> Ručno (ako preskačeš skriptu): kopiraj `mcpServers` iz `claude_desktop_config.json.example`
+> i zamijeni placeholdere (project-ref + 3 ključa + apsolutnu putanju do `server.mjs`).
 
 > Zašto vlastiti odds-server? Postojeći npm `odds-api-mcp-server` koristi *odds-api.io*,
 > a tvoj ključ je s *the-odds-api.com* — pa je u `mcp/odds-the-odds-api/` mali server koji
