@@ -1,0 +1,35 @@
+name: Deploy app to GitHub Pages
+
+# Serves the static app (index.html + config.js) at https://<user>.github.io/spine10/
+# Enable once: repo Settings → Pages → Source: "GitHub Actions".
+
+on:
+  push:
+    branches: [main, claude/mobile-mcp-supabase-integration-pqsupo]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # publish only the static front-end (not supabase/, mcp/, scripts/)
+          path: "."
+      - id: deployment
+        uses: actions/deploy-pages@v4

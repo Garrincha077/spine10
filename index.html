@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0d">
+<title>ASIMETRIJA — Konveksna lutrija na kamatu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0b0d; --panel:#141417; --panel2:#1a1a1f; --line:#26262b;
+  --gold:#d4af37; --gold-dim:#8a7320; --text:#e8e6e0; --muted:#8d8a82;
+  --green:#4caf7d; --red:#c2546b; --blue:#6b8fc2; --violet:#9b7bc2;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;
+  font-weight:300;line-height:1.5;padding:0 0 80px;font-size:14px;
+  background-image:radial-gradient(circle at 50% -10%,rgba(212,175,55,.06),transparent 55%);}
+h1,h2,h3,.serif{font-family:'DM Serif Display',serif;font-weight:400;letter-spacing:.2px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+header{padding:46px 0 30px;border-bottom:1px solid var(--line);margin-bottom:30px}
+.eyebrow{color:var(--gold);font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px}
+h1{font-size:clamp(30px,6vw,52px);line-height:1.05}
+h1 em{color:var(--gold);font-style:italic}
+.sub{color:var(--muted);margin-top:14px;max-width:660px;font-size:13px}
+.disc{color:var(--gold-dim);font-size:11px;margin-top:10px;letter-spacing:.3px}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:24px;margin-bottom:22px}
+.panel-h{display:flex;align-items:baseline;gap:12px;margin-bottom:20px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.panel-h h2{font-size:22px}
+.panel-h .tag{margin-left:auto;color:var(--muted);font-size:11px;letter-spacing:1px;text-transform:uppercase}
+
+label{display:block;color:var(--muted);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+input[type=text],input[type=number],select{
+  width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);
+  font-family:'IBM Plex Mono',monospace;font-size:14px;padding:9px 11px;border-radius:2px}
+input:focus,select:focus{outline:none;border-color:var(--gold)}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:720px){.g2,.g3,.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+.toggle{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:var(--text);font-size:12px}
+.toggle input{width:auto;accent-color:var(--gold)}
+
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:2px;padding:16px}
+.stat .k{color:var(--muted);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.stat .v{font-family:'DM Serif Display',serif;font-size:30px;line-height:1}
+.stat .v.gold{color:var(--gold)}.stat .v.green{color:var(--green)}.stat .v.red{color:var(--red)}
+.stat .note{color:var(--muted);font-size:10px;margin-top:7px}
+
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:var(--gold);text-align:left;font-weight:400;letter-spacing:1px;text-transform:uppercase;
+  font-size:10px;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.lane-row td input{padding:6px 8px;font-size:12px}
+.bar{height:6px;background:var(--bg);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-top:8px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--gold-dim),var(--gold))}
+
+button{font-family:'IBM Plex Mono',monospace;cursor:pointer;border-radius:2px;
+  border:1px solid var(--gold-dim);background:transparent;color:var(--gold);
+  padding:9px 16px;font-size:12px;letter-spacing:.5px;transition:.15s}
+button:hover{background:var(--gold);color:#000}
+button.ghost{border-color:var(--line);color:var(--muted)}
+button.ghost:hover{background:var(--panel2);color:var(--text);border-color:var(--muted)}
+button.sm{padding:5px 10px;font-size:11px}
+button.win{border-color:var(--green);color:var(--green)}button.win:hover{background:var(--green);color:#000}
+button.loss{border-color:var(--red);color:var(--red)}button.loss:hover{background:var(--red);color:#000}
+
+.leg{display:grid;grid-template-columns:1fr 110px 80px 32px;gap:8px;align-items:center;margin-bottom:8px}
+@media(max-width:560px){.leg{grid-template-columns:1fr 1fr}}
+.leg .x{border:1px solid var(--line);color:var(--muted);background:transparent;padding:0;height:34px}
+.leg .x:hover{border-color:var(--red);color:var(--red)}
+
+.builder-out{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+@media(max-width:560px){.builder-out{grid-template-columns:1fr 1fr}}
+.bo{background:var(--panel2);border:1px solid var(--line);padding:12px;border-radius:2px}
+.bo .k{color:var(--muted);font-size:9px;letter-spacing:1px;text-transform:uppercase}
+.bo .v{font-family:'DM Serif Display',serif;font-size:22px;margin-top:4px}
+
+.pill{display:inline-block;font-size:10px;letter-spacing:.5px;padding:2px 8px;border-radius:10px;border:1px solid var(--line)}
+.pill.A{color:var(--blue);border-color:var(--blue)}
+.pill.B{color:var(--gold);border-color:var(--gold-dim)}
+.pill.C{color:var(--violet);border-color:var(--violet)}
+.pill.D{color:#e08a3c;border-color:#e08a3c}
+.pill.win{color:var(--green);border-color:var(--green)}
+.pill.loss{color:var(--red);border-color:var(--red)}
+.pill.wait{color:var(--muted)}
+
+canvas{width:100%;height:auto;display:block}
+.legendline{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin-top:10px}
+.legendline span::before{content:'';display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.le-a::before{background:var(--blue)}.le-b::before{background:var(--gold)}.le-c::before{background:var(--violet)}.le-d::before{background:#e08a3c}
+
+.warn{color:var(--red);font-size:11px;margin-top:8px;display:none}
+.warn.show{display:block}
+.foot{color:var(--muted);font-size:11px;text-align:center;margin-top:40px;line-height:1.8}
+.hr{height:1px;background:var(--line);margin:20px 0}
+::selection{background:var(--gold);color:#000}
+*{-webkit-tap-highlight-color:rgba(212,175,55,.18)}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px}
+.tscroll table{min-width:560px}
+.tscroll::-webkit-scrollbar{height:6px}
+.tscroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+@media(max-width:560px){
+  body{font-size:15px;padding:0 0 60px env(safe-area-inset-bottom)}
+  .wrap{padding:0 14px}
+  header{padding:calc(28px + env(safe-area-inset-top)) 0 22px}
+  .panel{padding:18px 15px}
+  input[type=text],input[type=number],select{font-size:16px;padding:11px}
+  button{padding:11px 16px;min-height:44px}
+  button.sm{padding:8px 11px;min-height:36px}
+  .stat{padding:14px}
+  .stat .v{font-size:26px}
+  .stat .v[style*="font-size:20px"],.stat .v[style*="font-size:24px"]{font-size:18px!important;word-break:break-word;line-height:1.2}
+  .leg .x{min-height:40px}
+  .panel-h{flex-wrap:wrap}
+  .panel-h .tag{margin-left:0;width:100%}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+/* --- cloud sync bar + auth overlay (Supabase) --- */
+#syncbar{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);padding:10px 0 0}
+#syncbar .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;flex:none}
+#syncbar .dot.ok{background:var(--green)}#syncbar .dot.sync{background:var(--gold)}#syncbar .dot.off{background:var(--muted)}#syncbar .dot.err{background:var(--red)}
+#syncbar button{padding:3px 8px;font-size:10px;min-height:0}
+.authoverlay{position:fixed;inset:0;background:rgba(8,8,10,.93);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:60;padding:20px}
+.authcard{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:28px;max-width:340px;width:100%}
+.authcard input{width:100%}
+.authcard a{text-decoration:none}
+</style>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="wrap">
+<div id="syncbar"><span id="syncDot" class="dot off"></span><span id="syncState">lokalno (bez Supabasea)</span><button id="syncSignout" class="ghost sm" style="display:none">odjava</button></div>
+<header>
+  <div class="eyebrow">Konveksnost · Barbell · Glavnica zaštićena</div>
+  <h1>ASIMETRIJA <em>—</em> lutrija plaćena kamatom</h1>
+  <p class="sub">Kupuješ konveksnost pozitivnim carryjem. Premija = tvoj prinos, glavnica = zaštićeni nominal. Tri staze, sve sportski akumulatori: A recikliranje (~55x), B jackpot (~1000x), C lutrijski (~20.000x → €10k iz €0,50). Maksimalni godišnji gubitak = kamata; glavnica se ne dira.</p>
+  <p class="disc">Alat za planiranje i evidenciju, ne usluga klađenja. EV je strukturno negativan — cijena asimetrije koju svjesno plaćaš.</p>
+</header>
+
+<section class="panel">
+  <div class="panel-h"><h2>Glavnica i streljivo</h2><span class="tag">Glavnica = budžet ÷ stopa</span></div>
+  <div class="grid g4">
+    <div><label>Glavnica (€)</label><input type="number" id="principal" value="10000" step="500"></div>
+    <div><label>Nerizična stopa</label><input type="number" id="rate" value="3" step="0.1"> <span style="color:var(--muted);font-size:10px">% godišnje</span></div>
+    <div><label>Porez na prinos</label>
+      <label class="toggle"><input type="checkbox" id="taxfree" checked> Neoporezivo (UCITS &gt;2 god)</label></div>
+    <div><label>Ciljani trošak/god (€)</label><input type="number" id="budget" step="10"></div>
+  </div>
+  <div class="grid g3" style="margin-top:16px">
+    <div class="stat"><div class="k">Godišnje streljivo (cilj)</div><div class="v gold" id="ammo">—</div><div class="note" id="ammoNote">—</div></div>
+    <div class="stat"><div class="k">Max godišnji gubitak</div><div class="v red" id="maxloss">—</div><div class="note">glavnica ostaje ravna</div></div>
+    <div class="stat"><div class="k">Iskorišteno (A+B+C+D)</div><div class="v" id="spentTotal">—</div><div class="note" id="spentNote">—</div></div>
+  </div>
+  <p class="warn" id="overWarn">⚠ Plan troši više od godišnjeg streljiva. Smanji uloge ili broj listića — pravilo: nikad ne diraš glavnicu.</p>
+</section>
+
+<section class="panel">
+  <div class="panel-h"><h2>Tempo i raspored</h2><span class="tag">€300 / 12 = kapica/mjesec</span></div>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Mjesečna kapica</div><div class="v gold" id="capMo">—</div><div class="note">ravnomjerno kroz godinu</div></div>
+    <div class="stat"><div class="k">Potrošeno · ovaj mjesec</div><div class="v" id="spentMo">—</div><div class="note" id="moBar"></div></div>
+    <div class="stat"><div class="k">Potrošeno · YTD</div><div class="v" id="spentYtd">—</div><div class="note" id="moCount">—</div></div>
+    <div class="stat"><div class="k">Tempo vs plan</div><div class="v" id="paceV" style="font-size:22px">—</div><div class="note" id="paceNote">—</div></div>
+  </div>
+  <div class="grid g3" style="margin-top:16px">
+    <div><label>A — listića/god (tjedno≈52)</label><input type="number" id="cadA" step="1"></div>
+    <div><label>B — listića/god (2 tj≈26)</label><input type="number" id="cadB" step="1"></div>
+    <div><label>C — listića/god (mj≈12)</label><input type="number" id="cadC" step="1"></div>
+  </div>
+  <p class="disc" id="dueNote" style="margin-top:12px">—</p>
+</section>
+
+<section class="panel">
+  <div class="panel-h"><h2>Barbell akumulatora</h2><span class="tag">Niskomaržne noge · najmanje nogu za cilj</span></div>
+  <div class="tscroll"><table>
+    <thead><tr><th>Staza</th><th>Ulog €</th><th>Listića</th><th>Cilj (x)</th><th>Prosj. tečaj</th><th>Marža/par</th><th class="num">Parova ≈</th><th class="num">True P</th><th class="num">P(≥1/god)</th></tr></thead>
+    <tbody id="laneBody"></tbody>
+  </table></div>
+  <p class="disc" style="margin-top:12px">Staza C je sportski akumulator s <em>lutrijskim</em> koeficijentom — isti €10k san kao prava lutrija, ali bolje stvarne šanse (~1:32k umjesto ~1:100k+), jer biraš noge umjesto slijepog izvlačenja.</p>
+</section>
+
+<section class="panel">
+  <div class="panel-h"><h2>Troškovi i porez</h2><span class="tag">SuperSport HR · ugrađeno u neto</span></div>
+  <div class="grid g2">
+    <div><label>Manipulativni trošak (% uloga)</label><input type="number" id="mt" step="0.5"></div>
+    <div class="stat"><div class="k">Porez na dobitak · osnovica = dobitak − ulog</div><div class="note" style="font-size:11px;line-height:1.7">10% do €1.500 · 15% €1.5k–4k · 20% €4k–70k · 30% &gt;€70k</div></div>
+  </div>
+  <p class="disc">Primjer: €1 @ 53,06 → ulog €0,95 → bruto €50,40 → porez €4,95 → <b style="color:var(--gold)">neto €45,45</b>. Projekcija, slagač i dnevnik računaju neto.</p>
+</section>
+
+<section class="panel">
+  <div class="panel-h"><h2>Projekcija</h2><span class="tag">živo se osvježava</span></div>
+  <div class="grid g4">
+    <div class="stat"><div class="k">Očekivani neto / god</div><div class="v" id="evNet">—</div><div class="note">cijena asimetrije</div></div>
+    <div class="stat"><div class="k">P(barem nešto / god)</div><div class="v green" id="pAny">—</div><div class="note">uglavnom male reciklaže</div></div>
+    <div class="stat"><div class="k">P(€1k jackpot) 1·5·10 g</div><div class="v gold" id="pB" style="font-size:20px">—</div><div class="note" id="pBnote">Staza B</div></div>
+    <div class="stat"><div class="k">P(€10k lutrijski) 1·10 g</div><div class="v" id="pC" style="font-size:20px">—</div><div class="note" id="pCnote">Staza C</div></div>
+  </div>
+  <div class="grid g3" style="margin-top:16px">
+    <div class="stat"><div class="k">Oček. malih pogodaka/god</div><div class="v" id="expA" style="font-size:24px">—</div></div>
+    <div class="stat"><div class="k">Oček. čekanje na €1k</div><div class="v" id="waitB" style="font-size:24px">—</div></div>
+    <div class="stat"><div class="k">Ukupni povrat / ulog</div><div class="v" id="retRatio" style="font-size:24px">—</div></div>
+  </div>
+  <div style="margin-top:24px">
+    <label>Krivulja konveksnosti — P(≥1 pogodak/god) vs. ciljani multiplikator (log skala)</label>
+    <canvas id="curve" width="1000" height="320"></canvas>
+    <div class="legendline">
+      <span class="le-a">A · €55</span><span class="le-b">B · €1.000</span><span class="le-c">C · €10.000</span><span class="le-d">D · €25.000</span>
+    </div>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-h"><h2>Monte Carlo</h2><span class="tag">simulacija ishoda</span></div>
+  <div class="grid g3" style="align-items:end">
+    <div><label>Horizont</label><select id="mcYears"><option value="1">1 godina</option><option value="5">5 godina</option><option value="10">10 godina</option></select></div>
+    <div><label>Simulacija</label><select id="mcSims"><option value="20000">20.000</option><option value="50000">50.000</option></select></div>
+    <div><button id="mcRun">Pokreni simulaciju</button></div>
+  </div>
+  <div class="grid g4" style="margin-top:16px">
+    <div class="stat"><div class="k">P(u plusu)</div><div class="v" id="mcProf" style="font-size:24px">—</div></div>
+    <div class="stat"><div class="k">Medijan P&amp;L</div><div class="v" id="mcMed" style="font-size:24px">—</div></div>
+    <div class="stat"><div class="k">Prosjek (EV)</div><div class="v" id="mcMean" style="font-size:24px">—</div></div>
+    <div class="stat"><div class="k">Najbolji ishod</div><div class="v gold" id="mcBest" style="font-size:24px">—</div></div>
+  </div>
+  <div class="grid g4" style="margin-top:16px">
+    <div class="stat"><div class="k">p5 · loša godina</div><div class="v red" id="mcP5" style="font-size:20px">—</div></div>
+    <div class="stat"><div class="k">p95 · dobra</div><div class="v green" id="mcP95" style="font-size:20px">—</div></div>
+    <div class="stat"><div class="k">P(€1k+ B)</div><div class="v" id="mcPB" style="font-size:20px">—</div></div>
+    <div class="stat"><div class="k">P(C / D jackpot)</div><div class="v" id="mcPCD" style="font-size:18px">—</div></div>
+  </div>
+  <div style="margin-top:20px">
+    <label id="mcHistLabel">Distribucija godišnjeg neto P&amp;L</label>
+    <canvas id="mcCanvas" width="1000" height="300"></canvas>
+    <p class="disc" id="mcNote" style="margin-top:8px">Pokreni simulaciju za distribuciju ishoda. Najveći jackpoti (C/D) su rijetki pa izlaze izvan grafa — vidi vjerojatnosti iznad.</p>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-h"><h2>Slagač parova</h2><span class="tag">true P = ∏ 1 ÷ (tečaj × (1+marža))</span></div>
+  <div id="legs"></div>
+  <button class="ghost sm" id="addLeg">+ dodaj par</button>
+  <div class="grid g4" style="margin-top:18px;align-items:end">
+    <div><label>Ulog (€)</label><input type="number" id="bStake" value="1" step="0.10"></div>
+    <div><label>Marža/par</label><input type="number" id="bMargin" value="5" step="0.5"> <span style="color:var(--muted);font-size:10px">%</span></div>
+    <div><label>Staza</label><select id="bLane"><option value="A">A — Recikliranje</option><option value="B">B — Jackpot</option><option value="C">C — Lutrijski</option><option value="D">D — Kockarski</option></select></div>
+    <div><label class="toggle" style="margin-top:18px"><input type="checkbox" id="bSansa"> Sadrži Super Šansu (≥6 par)</label></div>
+  </div>
+  <div class="builder-out">
+    <div class="bo"><div class="k">Multiplikator</div><div class="v gold" id="boMult">—</div></div>
+    <div class="bo"><div class="k">Neto isplata</div><div class="v" id="boPay">—</div></div>
+    <div class="bo"><div class="k">True vjerojatnost</div><div class="v" id="boP">—</div></div>
+    <div class="bo"><div class="k">EV listića</div><div class="v" id="boEV">—</div></div>
+  </div>
+  <div style="margin-top:16px"><button id="saveTicket">Spremi listić u dnevnik</button></div>
+</section>
+
+<section class="panel">
+  <div class="panel-h"><h2>Dnevnik</h2><span class="tag" id="logSummary">—</span></div>
+  <div class="tscroll"><table>
+    <thead><tr><th>Listić</th><th>Staza</th><th class="num">Ulog</th><th class="num">Tečaj</th><th class="num">Neto isplata</th><th class="num">True P</th><th>Status</th><th></th></tr></thead>
+    <tbody id="logBody"></tbody>
+  </table></div>
+  <div class="grid g3" style="margin-top:18px">
+    <div class="stat"><div class="k">Realizirani P&amp;L</div><div class="v" id="realPL" style="font-size:24px">—</div></div>
+    <div class="stat"><div class="k">Pogoci · stvarno / oček.</div><div class="v" id="realHit" style="font-size:24px">—</div></div>
+    <div class="stat"><div class="k">Iskorišteno streljivo</div><div class="v" id="usedAmmo" style="font-size:24px">—</div></div>
+  </div>
+  <p class="disc" id="flywheelNote" style="margin-top:14px;display:none"></p>
+  <div style="margin-top:16px"><button class="ghost sm" id="resetBtn">Učitaj početni plan (reset)</button></div>
+</section>
+
+<p class="foot">
+  Pravilo glavnice: kladi se samo iz realizirane kamate. Kanta prazna → stani.<br>
+  Flywheel: €1k+ pogodak → 50% u glavnicu (veća glavnica = veće buduće streljivo).<br>
+  Igraj kao zabavu/konveksnu alokaciju, ne kao investicijsku strategiju.
+</p>
+</div>
+
+<div id="authOverlay" class="authoverlay" style="display:none">
+  <form id="authForm" class="authcard">
+    <div class="eyebrow" style="margin-bottom:6px">ASIMETRIJA · privatni pristup</div>
+    <h2 style="font-size:22px;margin-bottom:16px">Prijava</h2>
+    <label>Email</label>
+    <input type="email" id="authEmail" autocomplete="username" required>
+    <label style="margin-top:12px">Lozinka</label>
+    <input type="password" id="authPw" autocomplete="current-password" required>
+    <button id="authSubmit" type="submit" style="margin-top:18px;width:100%">Prijava</button>
+    <a href="#" id="authToggle" style="display:block;margin-top:12px;color:var(--muted);font-size:11px">Nemaš račun? Registriraj se</a>
+    <p id="authMsg" style="font-size:11px;margin-top:10px;min-height:14px"></p>
+  </form>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const eur=n=>'€'+(Math.round(n*100)/100).toLocaleString('hr-HR',{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2});
+const pct=p=>(p*100).toFixed(p<0.0001?4:p<0.01?2:1)+'%';
+const KEY='asimetrija_v5';
+const store={
+  load(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){return null}},
+  save(s){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
+};
+
+function seed(){return{
+  principal:10000, rate:3, taxfree:true, mt:5, budget:100,
+  lanes:{
+    A:{name:'Recikliranje',unit:1,tickets:0,mult:55,legOdd:2.30,margin:5},
+    B:{name:'Jackpot',unit:1,tickets:60,mult:1000,legOdd:2.68,margin:5},
+    C:{name:'Lutrijski',unit:0.5,tickets:50,mult:20000,legOdd:2.80,margin:5},
+    D:{name:'Kockarski',unit:0.25,tickets:60,mult:100000,legOdd:2.80,margin:5}
+  },
+  builder:{stake:1,margin:5,lane:'B',sansa:false,legs:[{m:'',o:2.6},{m:'',o:2.6},{m:'',o:2.6}]},
+  cadence:{A:0,B:60,C:50,D:60},
+  log:[{
+    label:'★ SP 27.6.: Hrvatska + Portugal + Zelenortski + Egipat + Austrija',
+    lane:'A', stake:1, mult:54.63, pay:54.63, tp:0.01434, status:'pending', date:'2026-06-25'
+  }]
+};}
+
+let S = store.load() || seed();
+if(!S.cadence) S.cadence={A:150,B:100,C:100};
+if(S.mt==null) S.mt=5;
+if(!S.lanes.D) S.lanes.D={name:'Kockarski',unit:0.25,tickets:40,mult:100000,legOdd:2.80,margin:5};
+if(S.budget==null) S.budget=Math.round(S.principal*(S.rate/100)*(S.taxfree?1:0.88));
+const LANEKEYS=['A','B','C','D'];
+function budget(){return S.budget!=null?S.budget:S.principal*(S.rate/100)*(S.taxfree?1:0.88);}
+
+// ---------- Cloud sync (Supabase) ----------
+// Mirrors the planner config to app_state (one jsonb row) and the journal to the
+// `tickets` table. localStorage stays as the instant/offline cache. If config.js
+// still has placeholders (or supabase-js didn't load), everything below no-ops and
+// the app behaves exactly like the original local-only version.
+const Cloud=(()=>{
+  const cfg=(typeof window!=='undefined'&&window.ASIM_CONFIG)||{};
+  const isPH=v=>!v||/YOUR_|PLACEHOLDER|example\.supabase/i.test(String(v));
+  const configured=!isPH(cfg.url)&&!isPH(cfg.anonKey);
+  const lib=(typeof window!=='undefined')&&window.supabase;
+  let sb=null,user=null,saveT=null,hydrating=false,subbed=false;
+  if(configured&&lib){try{sb=lib.createClient(cfg.url,cfg.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});}catch(e){console.warn('[cloud] init failed',e);}}
+
+  const setStatus=(state,text)=>{const d=$('syncDot'),s=$('syncState');if(d)d.className='dot '+state;if(s)s.textContent=text;};
+  const showAuth=on=>{const o=$('authOverlay');if(o)o.style.display=on?'flex':'none';};
+  const stateForCloud=()=>{const{log,...rest}=S;return rest;};
+  const rowToTicket=r=>({id:r.id,label:r.label,lane:r.lane,stake:+r.stake,mult:+r.mult,pay:+r.pay,tp:+r.tp,status:r.status,skimmed:!!r.skimmed,date:r.placed_on});
+  const renderAll=()=>{initInputs();renderGlavnica();renderLanes();renderTempo();renderDashboard();renderLog();};
+
+  async function pullState(){
+    const{data,error}=await sb.from('app_state').select('data').eq('user_id',user.id).maybeSingle();
+    if(error){console.warn('[cloud] pullState',error);return;}
+    if(data&&data.data&&Object.keys(data.data).length){const log=S.log;hydrating=true;S=Object.assign({},S,data.data,{log});store.save(S);hydrating=false;}
+    else{await pushState();} // first device: seed the cloud from local
+  }
+  async function pushState(){if(!sb||!user)return;const{error}=await sb.from('app_state').upsert({user_id:user.id,data:stateForCloud(),updated_at:new Date().toISOString()});if(error)console.warn('[cloud] pushState',error);}
+  function scheduleSave(){if(!sb||!user||hydrating)return;clearTimeout(saveT);setStatus('sync','spremam…');saveT=setTimeout(async()=>{await pushState();setStatus('ok','sinkronizirano');},800);}
+
+  async function pullTickets(){
+    if(!sb||!user)return;
+    const{data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:false});
+    if(error){console.warn('[cloud] pullTickets',error);return;}
+    hydrating=true;S.log=(data||[]).map(rowToTicket);store.save(S);hydrating=false;
+    renderLog();renderTempo();renderDashboard();
+  }
+  async function insertTicket(t){
+    if(!sb||!user)return null;
+    const row={user_id:user.id,label:t.label,lane:t.lane,stake:t.stake,mult:t.mult,pay:t.pay,tp:t.tp,status:t.status||'pending',skimmed:!!t.skimmed,placed_on:t.date||new Date().toISOString().slice(0,10)};
+    const{data,error}=await sb.from('tickets').insert(row).select('id').single();
+    if(error){console.warn('[cloud] insertTicket',error);return null;}
+    return data.id;
+  }
+  async function updateTicket(id,patch){if(!sb||!user||!id)return;const{error}=await sb.from('tickets').update(patch).eq('id',id);if(error)console.warn('[cloud] updateTicket',error);}
+  async function deleteTicket(id){if(!sb||!user||!id)return;const{error}=await sb.from('tickets').delete().eq('id',id);if(error)console.warn('[cloud] deleteTicket',error);}
+
+  function subscribe(){if(!sb||!user||subbed)return;subbed=true;sb.channel('tickets-rt').on('postgres_changes',{event:'*',schema:'public',table:'tickets'},()=>pullTickets()).subscribe();}
+
+  async function onSignedIn(u){
+    user=u;showAuth(false);
+    const so=$('syncSignout');if(so)so.style.display='inline';
+    setStatus('sync','učitavam…');
+    await pullState();await pullTickets();renderAll();subscribe();
+    setStatus('ok','sinkronizirano'+(u.email?' · '+u.email:''));
+  }
+
+  async function boot(){
+    if(!configured){setStatus('off','lokalno (bez Supabasea)');return;}
+    if(!sb){setStatus('err','supabase-js nije učitan');return;}
+    setStatus('sync','povezivanje…');
+    sb.auth.onAuthStateChange((_e,sess)=>{
+      if(sess&&sess.user){if(!user)onSignedIn(sess.user);}
+      else{user=null;subbed=false;const so=$('syncSignout');if(so)so.style.display='none';showAuth(true);setStatus('off','prijava potrebna');}
+    });
+    const{data:{session}}=await sb.auth.getSession();
+    if(session&&session.user)await onSignedIn(session.user);
+    else{showAuth(true);setStatus('off','prijava potrebna');}
+  }
+
+  const signIn=(email,pw)=>sb.auth.signInWithPassword({email,password:pw}).then(r=>r.error);
+  const signUp=(email,pw)=>sb.auth.signUp({email,password:pw}).then(r=>r.error);
+  const signOut=()=>sb.auth.signOut();
+
+  return {configured,get ready(){return !!sb;},get user(){return user;},boot,scheduleSave,insertTicket,updateTicket,deleteTicket,pullTickets,signIn,signUp,signOut};
+})();
+
+// ---------- Monte Carlo helpers ----------
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function poisson(l){if(l<=0)return 0;if(l>25)return Math.max(0,Math.round(l+Math.sqrt(l)*gauss()));let L=Math.exp(-l),k=0,p=1;do{k++;p*=Math.random();}while(p>L);return k-1;}
+function monteCarlo(years,sims){
+  const ls=LANEKEYS.map(k=>{const l=S.lanes[k],st=laneStats(l);return{k,lam:l.tickets*st.trueP,net:netOf(l.unit,l.mult).net,spend:l.unit*l.tickets};});
+  const spendYr=ls.reduce((s,l)=>s+l.spend,0);
+  const pnls=new Float64Array(sims);let prof=0;const hit={B:0,C:0,D:0};
+  for(let s=0;s<sims;s++){
+    let pnl=0,hB=0,hC=0,hD=0;
+    for(let y=0;y<years;y++){let ret=0;
+      for(const l of ls){const w=poisson(l.lam);if(w){ret+=w*l.net;if(l.k==='B')hB++;else if(l.k==='C')hC++;else if(l.k==='D')hD++;}}
+      pnl+=ret-spendYr;}
+    pnls[s]=pnl;if(pnl>0)prof++;if(hB)hit.B++;if(hC)hit.C++;if(hD)hit.D++;
+  }
+  const sorted=Array.from(pnls).sort((a,b)=>a-b);
+  const q=p=>sorted[Math.min(sims-1,Math.floor(p*sims))];
+  const mean=sorted.reduce((a,b)=>a+b,0)/sims;
+  return{sorted,prof:prof/sims,mean,med:q(0.5),p5:q(0.05),p95:q(0.95),best:sorted[sims-1],worst:sorted[0],
+    pB:hit.B/sims,pC:hit.C/sims,pD:hit.D/sims,spend:spendYr*years,years};
+}
+
+// ---------- costs: 5% manipulativni trošak + progresivni porez na dobitak (HR 2026) ----------
+const TAXBR=[[1500,0.10],[4000,0.15],[70000,0.20],[Infinity,0.30]];
+function progTax(base){let t=0,prev=0;for(const br of TAXBR){const cap=br[0],rate=br[1];if(base>prev){t+=(Math.min(base,cap)-prev)*rate;prev=cap;}else break;}return t;}
+function netOf(stake,odds){const eff=stake*(1-S.mt/100);const gross=eff*odds;const tax=progTax(Math.max(0,gross-eff));return{eff,gross,tax,net:gross-tax};}
+
+// ---------- math ----------
+function laneStats(l){
+  const legs=Math.log(l.mult)/Math.log(l.legOdd);
+  const m=l.margin/100;
+  const trueP=(1/l.mult)/Math.pow(1+m,legs);
+  const spend=l.unit*l.tickets;
+  const expHits=l.tickets*trueP;
+  const pAtLeast=1-Math.pow(1-trueP,l.tickets);
+  const n=netOf(l.unit,l.mult);
+  const expRet=expHits*n.net;
+  return {legs,trueP,spend,expHits,pAtLeast,expRet,ev:expRet-spend,net:n.net,gross:n.gross,tax:n.tax};
+}
+const overYears=(q,y)=>1-Math.pow(1-q,y);
+function ammo(){return S.principal*(S.rate/100)*(S.taxfree?1:0.88);}
+
+// ---------- render ----------
+function renderLanes(){
+  const tb=$('laneBody'); tb.innerHTML='';
+  ['A','B','C','D'].forEach(key=>{
+    const l=S.lanes[key], st=laneStats(l);
+    const tr=document.createElement('tr'); tr.className='lane-row';
+    tr.innerHTML=`
+      <td><span class="pill ${key}">${key}</span> ${l.name}</td>
+      <td><input type="number" step="0.10" value="${l.unit}" data-k="${key}" data-f="unit" style="width:70px"></td>
+      <td><input type="number" step="10" value="${l.tickets}" data-k="${key}" data-f="tickets" style="width:70px"></td>
+      <td><input type="number" step="10" value="${l.mult}" data-k="${key}" data-f="mult" style="width:90px"></td>
+      <td><input type="number" step="0.01" value="${l.legOdd}" data-k="${key}" data-f="legOdd" style="width:70px"></td>
+      <td><input type="number" step="0.5" value="${l.margin}" data-k="${key}" data-f="margin" style="width:60px"></td>
+      <td class="num">${st.legs.toFixed(1)}</td>
+      <td class="num">${pct(st.trueP)}</td>
+      <td class="num gold">${pct(st.pAtLeast)}</td>`;
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',e=>{
+    S.lanes[e.target.dataset.k][e.target.dataset.f]=parseFloat(e.target.value)||0; commit();
+  }));
+}
+function renderGlavnica(){
+  $('principal').value=S.principal; $('rate').value=S.rate; $('taxfree').checked=S.taxfree; $('budget').value=S.budget;
+  const a=ammo(), b=budget();
+  $('ammo').textContent=eur(b);
+  $('ammoNote').textContent=`kamata €${Math.round(a)} · ostatak €${Math.round(a-b)} → glavnica`;
+  $('maxloss').textContent='−'+eur(b);
+}
+function renderDashboard(){
+  const A=laneStats(S.lanes.A),B=laneStats(S.lanes.B),C=laneStats(S.lanes.C),D=laneStats(S.lanes.D);
+  const spend=A.spend+B.spend+C.spend+D.spend, expRet=A.expRet+B.expRet+C.expRet+D.expRet, ev=expRet-spend, a=budget();
+  $('spentTotal').textContent=eur(spend);
+  $('spentNote').textContent=`A ${eur(A.spend)} · B ${eur(B.spend)} · C ${eur(C.spend)} · D ${eur(D.spend)}`;
+  const over=spend>a+0.001; $('overWarn').classList.toggle('show',over);
+  $('spentTotal').className='v '+(over?'red':'');
+  $('evNet').textContent=(ev>=0?'+':'−')+eur(Math.abs(ev)); $('evNet').className='v '+(ev>=0?'green':'red');
+  const pAny=1-(1-A.pAtLeast)*(1-B.pAtLeast)*(1-C.pAtLeast)*(1-D.pAtLeast);
+  $('pAny').textContent=pct(pAny);
+  $('pB').textContent=`${pct(B.pAtLeast)} · ${pct(overYears(B.pAtLeast,5))} · ${pct(overYears(B.pAtLeast,10))}`;
+  $('pC').textContent=`${pct(C.pAtLeast)} · ${pct(overYears(C.pAtLeast,10))}`;
+  $('pBnote').textContent=`neto ${eur(B.net)}`;
+  $('pCnote').textContent=`C neto ${eur(C.net)} · D neto ${eur(D.net)}`;
+  $('expA').textContent=A.expHits.toFixed(2);
+  $('waitB').textContent=(B.pAtLeast>0?(1/B.pAtLeast).toFixed(1):'∞')+' god';
+  $('retRatio').textContent=(spend>0?(expRet/spend*100).toFixed(0):'—')+'%';
+  drawCurve();
+}
+function drawCurve(){
+  const cv=$('curve'),x=cv.getContext('2d'),W=cv.width,H=cv.height,pad=46;
+  x.clearRect(0,0,W,H);
+  const n=S.lanes.B.tickets,odd=S.lanes.B.legOdd,m=S.lanes.B.margin/100;
+  const xmin=Math.log10(10),xmax=Math.log10(150000);
+  const X=v=>pad+(Math.log10(v)-xmin)/(xmax-xmin)*(W-pad-20);
+  const Y=p=>H-pad-p*(H-pad-20);
+  x.font='16px "IBM Plex Mono"'; x.lineWidth=1;
+  [10,100,1000,10000,100000].forEach(t=>{const px=X(t);x.strokeStyle='#26262b';x.beginPath();x.moveTo(px,20);x.lineTo(px,H-pad);x.stroke();
+    x.fillStyle='#8d8a82';x.fillText(t>=1000?(t/1000)+'k':t,px-8,H-pad+16);});
+  [0,.25,.5,.75,1].forEach(p=>{const py=Y(p);x.strokeStyle='#1e1e22';x.beginPath();x.moveTo(pad,py);x.lineTo(W-20,py);x.stroke();
+    x.fillStyle='#8d8a82';x.fillText((p*100)+'%',6,py+4);});
+  x.strokeStyle='#d4af37';x.lineWidth=2;x.beginPath();
+  for(let i=0;i<=240;i++){
+    const mult=Math.pow(10,xmin+(xmax-xmin)*i/240);
+    const legs=Math.log(mult)/Math.log(odd);
+    const tp=(1/mult)/Math.pow(1+m,legs);
+    const p=1-Math.pow(1-tp,n);
+    const px=X(mult),py=Y(p); i?x.lineTo(px,py):x.moveTo(px,py);
+  }
+  x.stroke();
+  const dot=(mult,col,lab)=>{const legs=Math.log(mult)/Math.log(odd);
+    const tp=(1/mult)/Math.pow(1+m,legs);const p=1-Math.pow(1-tp,n);
+    x.fillStyle=col;x.beginPath();x.arc(X(mult),Y(p),5,0,7);x.fill();
+    x.fillText(lab,X(mult)+8,Y(p)-6);};
+  dot(55,'#6b8fc2','A');dot(1000,'#d4af37','B');dot(20000,'#9b7bc2','C');dot(100000,'#e08a3c','D');
+}
+
+function runMC(){
+  const years=+$('mcYears').value, sims=+$('mcSims').value;
+  const r=monteCarlo(years,sims);
+  const sign=v=>(v>=0?'+':'−')+eur(Math.abs(v));
+  $('mcProf').textContent=pct(r.prof);
+  $('mcMed').textContent=sign(r.med); $('mcMed').className='v '+(r.med>=0?'green':'red');
+  $('mcMean').textContent=sign(r.mean); $('mcMean').className='v '+(r.mean>=0?'green':'red');
+  $('mcBest').textContent=sign(r.best);
+  $('mcP5').textContent=sign(r.p5); $('mcP95').textContent=sign(r.p95);
+  $('mcPB').textContent=pct(r.pB);
+  $('mcPCD').textContent=`${pct(r.pC)} / ${pct(r.pD)}`;
+  $('mcHistLabel').textContent=`Distribucija neto P&L kroz ${years} god (${(sims/1000)}k simulacija)`;
+  drawHist(r);
+  $('mcNote').textContent=`Worst (sve promašeno): ${sign(-r.spend)}. Veliki jackpoti (C/D) rijetki — graf je odrezan na p98, rep ide desno.`;
+}
+function drawHist(r){
+  const cv=$('mcCanvas'),x=cv.getContext('2d'),W=cv.width,H=cv.height,pad=46;
+  x.clearRect(0,0,W,H);
+  const lo=r.sorted[0], hiIdx=Math.floor(0.98*r.sorted.length), hi=Math.max(r.sorted[hiIdx],lo+1);
+  const BINS=44, bw=(hi-lo)/BINS, counts=new Array(BINS).fill(0); let over=0;
+  for(const v of r.sorted){ if(v>hi){over++;continue;} let b=Math.floor((v-lo)/bw); if(b<0)b=0; if(b>=BINS)b=BINS-1; counts[b]++; }
+  const maxC=Math.max(...counts,1);
+  const X=v=>pad+(v-lo)/(hi-lo)*(W-pad-20);
+  const Y=c=>H-pad-c/maxC*(H-pad-20);
+  x.font='15px "IBM Plex Mono"';
+  // zero line
+  if(lo<0&&hi>0){const z=X(0);x.strokeStyle='#3a3a40';x.setLineDash([4,4]);x.beginPath();x.moveTo(z,20);x.lineTo(z,H-pad);x.stroke();x.setLineDash([]);x.fillStyle='#8d8a82';x.fillText('0',z-4,18);}
+  // bars
+  for(let i=0;i<BINS;i++){if(!counts[i])continue;const x0=X(lo+i*bw),x1=X(lo+(i+1)*bw),y=Y(counts[i]);
+    const center=lo+(i+0.5)*bw; x.fillStyle=center>=0?'#4caf7d':'#c2546b';
+    x.fillRect(x0+1,y,Math.max(1,x1-x0-2),H-pad-y);}
+  // axis labels
+  x.fillStyle='#8d8a82';
+  [lo,lo+(hi-lo)*0.5,hi].forEach(v=>{x.fillText((v>=0?'+':'−')+'€'+Math.abs(Math.round(v)),X(v)-18,H-pad+18);});
+  if(over){x.fillStyle='#e08a3c';x.fillText('▸ '+over+' jackpot god. desno',W-220,34);}
+}
+
+function drawCurve_unused(){
+}
+
+// ---------- builder ----------
+function renderLegs(){
+  const box=$('legs');box.innerHTML='';
+  S.builder.legs.forEach((lg,i)=>{
+    const d=document.createElement('div');d.className='leg';
+    d.innerHTML=`<input type="text" placeholder="utakmica / tržište" value="${lg.m||''}" data-i="${i}" data-f="m">
+      <input type="number" step="0.01" placeholder="tečaj" value="${lg.o||''}" data-i="${i}" data-f="o">
+      <span style="color:var(--muted);font-size:11px;text-align:center">par ${i+1}</span>
+      <button class="x" data-del="${i}">×</button>`;
+    box.appendChild(d);
+  });
+  box.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',e=>{
+    const i=+e.target.dataset.i,f=e.target.dataset.f;
+    S.builder.legs[i][f]=f==='o'?(parseFloat(e.target.value)||0):e.target.value;builderOut();
+  }));
+  box.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',e=>{
+    S.builder.legs.splice(+e.target.dataset.del,1);if(!S.builder.legs.length)S.builder.legs.push({m:'',o:2.6});
+    renderLegs();builderOut();
+  }));
+}
+function builderOut(){
+  const b=S.builder,m=b.margin/100;let mult=1,tp=1,valid=0;
+  b.legs.forEach(l=>{if(l.o>1){mult*=l.o;tp*=1/(l.o*(1+m));valid++;}});
+  if(!valid){mult=0;tp=0;}
+  const n=netOf(b.stake,mult), pay=n.net, ev=tp*pay-b.stake;
+  $('boMult').textContent=valid?mult.toFixed(1)+'x':'—';
+  $('boPay').textContent=valid?eur(pay):'—';
+  $('boP').textContent=valid?pct(tp):'—';
+  $('boEV').textContent=valid?((ev>=0?'+':'−')+eur(Math.abs(ev))):'—';
+  $('boEV').className='v '+(valid?(ev>=0?'':'red'):'');
+  return {mult,tp,pay,ev,valid,gross:n.gross,tax:n.tax};
+}
+
+// ---------- log ----------
+function renderLog(){
+  const tb=$('logBody');
+  if(!S.log.length){tb.innerHTML='<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:20px">Nema spremljenih listića.</td></tr>';}
+  else{
+    tb.innerHTML='';
+    S.log.forEach((t,i)=>{
+      const tr=document.createElement('tr');
+      const sp=t.status==='win'?'<span class="pill win">dobitak</span>':t.status==='loss'?'<span class="pill loss">gubitak</span>':'<span class="pill wait">čeka</span>';
+      tr.innerHTML=`<td>${t.label||('Listić '+(i+1))}</td>
+        <td><span class="pill ${t.lane}">${t.lane}</span></td>
+        <td class="num">${eur(t.stake)}</td><td class="num">${t.mult.toFixed(1)}x</td>
+        <td class="num gold">${eur(netOf(t.stake,t.mult).net)}</td><td class="num">${pct(t.tp)}</td>
+        <td>${sp}</td>
+        <td class="num"><button class="sm win" data-w="${i}">W</button> <button class="sm loss" data-l="${i}">L</button> <button class="sm ghost" data-x="${i}">×</button></td>`;
+      tb.appendChild(tr);
+    });
+    tb.querySelectorAll('[data-w]').forEach(b=>b.onclick=e=>{const t=S.log[+e.target.dataset.w];t.status='win';commit();Cloud.updateTicket(t.id,{status:'win'});});
+    tb.querySelectorAll('[data-l]').forEach(b=>b.onclick=e=>{const t=S.log[+e.target.dataset.l];t.status='loss';commit();Cloud.updateTicket(t.id,{status:'loss'});});
+    tb.querySelectorAll('[data-x]').forEach(b=>b.onclick=e=>{const t=S.log.splice(+e.target.dataset.x,1)[0];commit();Cloud.deleteTicket(t&&t.id);});
+  }
+  const wins=S.log.filter(t=>t.status==='win').length;
+  const won=S.log.filter(t=>t.status==='win').reduce((s,t)=>s+netOf(t.stake,t.mult).net,0);
+  const settledStake=S.log.filter(t=>t.status!=='pending').reduce((s,t)=>s+t.stake,0);
+  const staked=S.log.reduce((s,t)=>s+t.stake,0);
+  const pl=won-settledStake;
+  const settled=S.log.filter(t=>t.status!=='pending');
+  const modelP=settled.reduce((s,t)=>s+t.tp,0);
+  $('logSummary').textContent=`${S.log.length} listića · ${wins} dobitnih`;
+  $('realPL').textContent=(pl>=0?'+':'−')+eur(Math.abs(pl));$('realPL').className='v '+(pl>=0?'green':'red');
+  $('realHit').textContent=`${wins} / ${modelP.toFixed(2)}`;
+  $('usedAmmo').textContent=eur(staked)+' / '+eur(budget());
+  const big=S.log.filter(t=>t.status==='win'&&netOf(t.stake,t.mult).net>=500&&!t.skimmed);
+  if(big.length){
+    const skim=big.reduce((s,t)=>s+netOf(t.stake,t.mult).net*0.5,0);
+    $('flywheelNote').style.display='block';
+    $('flywheelNote').innerHTML=`Flywheel dostupan: skini 50% velikih neto dobitaka (${eur(skim)}) u glavnicu → buduće streljivo raste. <button class="sm" id="doFly">Dodaj ${eur(skim)} u glavnicu</button>`;
+    $('doFly').onclick=()=>{S.principal+=skim;big.forEach(t=>{t.skimmed=true;Cloud.updateTicket(t.id,{skimmed:true});});commit();};
+  } else $('flywheelNote').style.display='none';
+}
+
+function renderTempo(){
+  const a=budget(), cap=a/12, now=new Date();
+  const ym=now.toISOString().slice(0,7), yr=String(now.getFullYear());
+  const inMonth=t=>(t.date||'').slice(0,7)===ym, inYear=t=>(t.date||'').slice(0,4)===yr;
+  const moSpent=S.log.filter(inMonth).reduce((s,t)=>s+t.stake,0);
+  const ytd=S.log.filter(inYear).reduce((s,t)=>s+t.stake,0);
+  const moCount=S.log.filter(inMonth).length;
+  $('capMo').textContent=eur(cap);
+  $('spentMo').textContent=eur(moSpent); $('spentMo').className='v '+(moSpent>cap+0.001?'red':'');
+  $('moBar').innerHTML=`<div class="bar"><i style="width:${Math.min(100,cap?moSpent/cap*100:0)}%"></i></div>`;
+  $('spentYtd').textContent=eur(ytd)+' / '+eur(a);
+  $('moCount').textContent=moCount+' listića ovaj mjesec';
+  const start=new Date(+yr,0,1), end=new Date(+yr+1,0,1), frac=(now-start)/(end-start);
+  const diff=ytd-a*frac;
+  $('paceV').textContent=(diff>=0?'+':'−')+eur(Math.abs(diff));
+  $('paceV').className='v '+(Math.abs(diff)<a*0.08?'':(diff>0?'red':'green'));
+  $('paceNote').textContent=diff>0?'ispred plana — usporiti':'iza plana — ima prostora';
+  if($('cadA')){$('cadA').value=S.cadence.A;$('cadB').value=S.cadence.B;$('cadC').value=S.cadence.C;}
+  $('dueNote').textContent=`Ritam: B ~${(S.cadence.B/52).toFixed(2)}/tj · C ~${(S.cadence.C/12).toFixed(1)}/mj · D ~${((S.cadence.D||0)/12).toFixed(1)}/mj.`;
+}
+
+function commit(){store.save(S);renderGlavnica();renderTempo();renderDashboard();renderLog();
+  document.querySelectorAll('input[type=number]').forEach(i=>i.setAttribute('inputmode','decimal'));
+  Cloud.scheduleSave();}
+
+// ---------- bindings ----------
+$('principal').oninput=e=>{S.principal=parseFloat(e.target.value)||0;commit();};
+$('rate').oninput=e=>{S.rate=parseFloat(e.target.value)||0;commit();};
+$('taxfree').onchange=e=>{S.taxfree=e.target.checked;commit();};
+$('budget').oninput=e=>{S.budget=parseFloat(e.target.value)||0;commit();};
+$('mt').oninput=e=>{S.mt=parseFloat(e.target.value)||0;builderOut();commit();};
+$('mcRun').onclick=runMC;
+$('bStake').oninput=e=>{S.builder.stake=parseFloat(e.target.value)||0;builderOut();};
+$('bMargin').oninput=e=>{S.builder.margin=parseFloat(e.target.value)||0;builderOut();};
+$('bLane').onchange=e=>{S.builder.lane=e.target.value;};
+$('bSansa').onchange=e=>{S.builder.sansa=e.target.checked;};
+['A','B','C'].forEach(k=>{const el=$('cad'+k); if(el) el.oninput=e=>{S.cadence[k]=parseInt(e.target.value)||0;commit();};});
+$('addLeg').onclick=()=>{S.builder.legs.push({m:'',o:2.6});renderLegs();builderOut();};
+$('saveTicket').onclick=async()=>{
+  const o=builderOut();if(!o.valid)return;
+  const lab=S.builder.legs.filter(l=>l.m).map(l=>l.m).slice(0,3).join(' + ')||(o.valid+'-par');
+  const t={label:(S.builder.sansa?'★ ':'')+lab,lane:S.builder.lane,stake:S.builder.stake,mult:o.mult,pay:o.pay,tp:o.tp,status:'pending',date:new Date().toISOString().slice(0,10)};
+  S.log.unshift(t);
+  commit();
+  const id=await Cloud.insertTicket(t);if(id){t.id=id;store.save(S);}
+};
+$('resetBtn').onclick=()=>{S=seed();store.save(S);initInputs();renderLanes();renderLegs();builderOut();commit();Cloud.pullTickets();};
+
+function initInputs(){
+  $('bStake').value=S.builder.stake;$('bMargin').value=S.builder.margin;
+  $('bLane').value=S.builder.lane;$('bSansa').checked=S.builder.sansa;
+  $('mt').value=S.mt;
+}
+initInputs();renderLanes();renderLegs();builderOut();commit();
+window.addEventListener('resize',drawCurve);
+
+// ---------- auth overlay wiring + cloud boot ----------
+(function(){
+  const f=$('authForm');
+  if(f){
+    let mode='in';const msg=$('authMsg');
+    $('authToggle').onclick=ev=>{ev.preventDefault();mode=mode==='in'?'up':'in';
+      $('authSubmit').textContent=mode==='in'?'Prijava':'Registracija';
+      $('authToggle').textContent=mode==='in'?'Nemaš račun? Registriraj se':'Imaš račun? Prijavi se';
+      msg.textContent='';};
+    f.onsubmit=async ev=>{ev.preventDefault();msg.style.color='var(--muted)';msg.textContent='…';
+      const email=$('authEmail').value.trim(),pw=$('authPw').value;
+      const err=mode==='in'?await Cloud.signIn(email,pw):await Cloud.signUp(email,pw);
+      if(err){msg.style.color='var(--red)';msg.textContent=err.message||String(err);}
+      else if(mode==='up'){msg.style.color='var(--green)';msg.textContent='Registracija OK. Ako traži potvrdu e-pošte, potvrdi pa se prijavi.';
+        mode='in';$('authSubmit').textContent='Prijava';$('authToggle').textContent='Nemaš račun? Registriraj se';}};
+    const so=$('syncSignout');if(so)so.onclick=()=>Cloud.signOut();
+  }
+  Cloud.boot();
+})();
+</script>
+</body>
+</html>

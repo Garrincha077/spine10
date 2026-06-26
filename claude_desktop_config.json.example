@@ -1,0 +1,33 @@
+{
+  "//": "ASIMETRIJA desktop MCP config. Copy the mcpServers block into your real Claude Desktop config and replace the placeholders. Location: macOS ~/Library/Application Support/Claude/claude_desktop_config.json | Windows %APPDATA%\\Claude\\claude_desktop_config.json | Linux ~/.config/Claude/claude_desktop_config.json. Fully quit & reopen Claude Desktop after saving (the hammer icon shows the tools).",
+
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--project-ref=YOUR_PROJECT_REF"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "YOUR_SUPABASE_PERSONAL_ACCESS_TOKEN"
+      }
+    },
+
+    "api-football": {
+      "command": "npx",
+      "args": ["-y", "api-football-mcp@latest"],
+      "env": {
+        "API_FOOTBALL_KEY": "YOUR_API_FOOTBALL_KEY"
+      }
+    },
+
+    "asimetrija-odds": {
+      "command": "node",
+      "args": ["/ABSOLUTE/PATH/TO/spine10/mcp/odds-the-odds-api/server.mjs"],
+      "env": {
+        "ODDS_API_KEY": "YOUR_THE_ODDS_API_KEY"
+      }
+    }
+  }
+}
