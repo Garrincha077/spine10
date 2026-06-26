@@ -14,6 +14,6 @@
  * exactly like before — so it works even before Supabase is set up.
  */
 window.ASIM_CONFIG = {
-  url:     "YOUR_SUPABASE_PROJECT_URL",
-  anonKey: "YOUR_SUPABASE_ANON_KEY",
+  url:     "https://przgfoboinqjiyjktmeg.supabase.co",
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByemdmb2JvaW5xaml5amt0bWVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0ODU2MjMsImV4cCI6MjA5ODA2MTYyM30.JE9uQNLdM2t5lMWQ-ZY8KPws0dRHxaIRmWB1GgOSSZI",
 };
