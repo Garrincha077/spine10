@@ -2,10 +2,12 @@ name: Deploy app to GitHub Pages
 
 # Serves the static app (index.html + config.js) at https://<user>.github.io/spine10/
 # Enable once: repo Settings → Pages → Source: "GitHub Actions".
+# Runs only on main (after merge) + manual dispatch, so feature-branch PRs stay green
+# even before Pages is enabled.
 
 on:
   push:
-    branches: [main, claude/mobile-mcp-supabase-integration-pqsupo]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
