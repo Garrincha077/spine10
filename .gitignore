@@ -1,0 +1,22 @@
+# --- secrets: NEVER commit real tokens/keys ---
+.env
+.env.local
+secrets/
+*.local.json
+# real desktop config holds live keys (PAT etc.) — keep only the .example in git
+claude_desktop_config.json
+
+# supabase cli local state
+supabase/.branches/
+supabase/.temp/
+.supabase/
+
+# node / tooling
+node_modules/
+npm-debug.log*
+.DS_Store
+
+# NOTE on config.js:
+# config.js holds only the Supabase Project URL + anon (publishable) key.
+# Those are SAFE to be public — Row Level Security protects the data — so config.js
+# stays tracked. The service_role key must NEVER be placed in config.js or any client file.

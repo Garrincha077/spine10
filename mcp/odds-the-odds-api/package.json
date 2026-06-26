@@ -1,0 +1,20 @@
+{
+  "name": "asimetrija-odds-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MCP server wrapping The Odds API (the-odds-api.com) for the ASIMETRIJA workflow",
+  "type": "module",
+  "bin": {
+    "asimetrija-odds-mcp": "server.mjs"
+  },
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.23.8"
+  }
+}

@@ -1,0 +1,11 @@
+# Supabase CLI config. `project_id` is your project ref (the Project URL subdomain).
+# Used by: supabase link --project-ref <ref>  /  supabase db push  /  supabase functions deploy
+project_id = "YOUR_PROJECT_REF"
+
+[db]
+# local dev db port (only relevant if you run `supabase start`)
+port = 54322
+
+[functions.odds]
+# Edge Function used by the web app to pull live odds without exposing the key.
+verify_jwt = true
